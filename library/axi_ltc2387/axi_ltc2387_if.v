@@ -47,6 +47,7 @@ module axi_ltc2387_if #(
 
   // adc interface
 
+  input                    ila_clk,
   input                    clk,
   input                    clk_gate,
   input                    dco_p,
@@ -97,6 +98,13 @@ module axi_ltc2387_if #(
   always @(negedge dco) begin
       adc_data_db_n <= {adc_data_db_n, db_int_s};
   end
+
+  my_ila i_ila (
+    .clk(ila_clk),
+    .probe0(dco),
+    .probe1(adc_data),
+    .probe2(da_int_s),
+    .probe3(db_int_s));
 
   // bits rearrangement
 

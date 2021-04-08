@@ -46,6 +46,7 @@ module axi_ltc2387 #(
 
   // adc interface
 
+  input                     ila_clk,
   input                     ref_clk,
   input                     clk_gate,
   input                     dco_p,
@@ -139,6 +140,7 @@ module axi_ltc2387 #(
     .TWOLANES (TWOLANES))
   i_if (
     .clk (ref_clk),
+    .ila_clk (ila_clk),
     .clk_gate (clk_gate),
     .da_p (da_p),
     .da_n (da_n),
