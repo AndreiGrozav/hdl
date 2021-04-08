@@ -19,6 +19,6 @@ LIB_DEPS += axi_sysid
 LIB_DEPS += sysid_rom
 LIB_DEPS += util_i2c_mixer
 LIB_DEPS += axi_i2s_adi
-LIB_DEPS += axi_pulse_gen
+LIB_DEPS += axi_pwm_gen
 
 include ../../scripts/project-xilinx.mk

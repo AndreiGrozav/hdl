@@ -83,7 +83,8 @@ module system_top (
 
   input                   otg_vbusoc,
 
-  input                   ref_clk,
+  input                   ref_clk_p,
+  input                   ref_clk_n,
   output                  clk_p,
   output                  clk_n,
   input                   dco_p,
@@ -92,6 +93,9 @@ module system_top (
   input                   da_p,
   input                   db_n,
   input                   db_p,
+  output                  clk_out,
+  output                  cnv_out,
+  output                  clk_gate_out,
   output                  cnv_p,
   output                  cnv_n);
 
@@ -112,21 +116,19 @@ module system_top (
 
 // instantiations
 
-generate
-  ODDR #(.DDR_CLK_EDGE ("SAME_EDGE")) i_tx_clk_oddr (
-    .CE (1'b1),
-    .R (1'b0),
-    .S (1'b0),
-    .C (ref_clk),
-    .D1 (1'b1),
-    .D2 (1'b0),
-    .Q (clk_s));
-endgenerate
+ad_data_clk #(
+  .SINGLE_ENDED (0))
+i_ref_clk (
+  .rst (1'b0),
+  .locked (),
+  .clk_in_p (ref_clk_p),
+  .clk_in_n (ref_clk_n),
+  .clk (clk_s));
 
 OBUFTDS OBUFTDS_clk (
   .O(clk_p),
   .OB(clk_n),
-  .T(clk_gate),
+  .T(~clk_gate),
   .I(clk_s));
 
 OBUFDS OBUFDS_cnv (
@@ -134,6 +136,13 @@ OBUFDS OBUFDS_cnv (
   .OB(cnv_n),
   .I(cnv));
 
+OBUFT OBUFT_clk (
+  .O(clk_out),
+  .T(~clk_gate),
+  .I(clk_s));
+
+assign cnv_out = cnv;
+assign clk_gate_out = clk_gate;
 
 ad_iobuf #(.DATA_WIDTH(32)) iobuf_gpio_bd (
   .dio_i (gpio_o[31:0]),
@@ -204,7 +213,7 @@ system_wrapper i_system_wrapper (
     .iic_mux_sda_t (iic_mux_sda_t_s),
     .otg_vbusoc (otg_vbusoc),
     .spdif (spdif),
-    .ref_clk (ref_clk),
+    .ref_clk (clk_s),
     .dco_p (dco_p),
     .dco_n (dco_n),
     .da_n (da_n),

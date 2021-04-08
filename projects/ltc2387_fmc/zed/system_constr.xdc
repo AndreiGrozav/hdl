@@ -1,7 +1,14 @@
 
 # ltc2387
 
-set_property -dict {PACKAGE_PIN D18    IOSTANDARD LVCMOS25} [get_ports ref_clk]                         ; ## G02  FMC_LPC_CLK1_M2C_P
+# debug ports
+set_property -dict {PACKAGE_PIN Y10    IOSTANDARD LVCMOS33} [get_ports clk_out     ] ; ## JA3
+set_property -dict {PACKAGE_PIN AA11   IOSTANDARD LVCMOS33} [get_ports cnv_out     ] ; ## JA2
+set_property -dict {PACKAGE_PIN Y11    IOSTANDARD LVCMOS33} [get_ports clk_gate_out] ; ## JA1
+# end of debug ports
+
+set_property -dict {PACKAGE_PIN D18    IOSTANDARD LVDS_25 DIFF_TERM TRUE} [get_ports ref_clk_p]         ; ## G02  FMC_LPC_CLK1_M2C_P
+set_property -dict {PACKAGE_PIN C19    IOSTANDARD LVDS_25 DIFF_TERM TRUE} [get_ports ref_clk_n]         ; ## G03  FMC_LPC_CLK1_M2C_N
 set_property -dict {PACKAGE_PIN M19    IOSTANDARD LVDS_25 DIFF_TERM TRUE} [get_ports clk_p]             ; ## G06  FMC_LPC_LA00_CC_P
 set_property -dict {PACKAGE_PIN M20    IOSTANDARD LVDS_25 DIFF_TERM TRUE} [get_ports clk_n]             ; ## G07  FMC_LPC_LA00_CC_N
 set_property -dict {PACKAGE_PIN L18    IOSTANDARD LVDS_25 DIFF_TERM TRUE} [get_ports dco_p]             ; ## H04  FMC_LPC_CLK0_M2C_P
@@ -17,7 +24,7 @@ set_property -dict {PACKAGE_PIN N20    IOSTANDARD LVDS_25} [get_ports cnv_n]    
 
 # clocks
 
-create_clock -name adc_clk -period 66.666   [get_ports dco_p]
+create_clock -name adc_clk -period 8.33     [get_ports dco_p]
 create_clock -name ref_clk -period 8.33     [get_ports ref_clk]
 
 # Not used, extra options for conversion on schematic
