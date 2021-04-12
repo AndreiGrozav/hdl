@@ -120,7 +120,7 @@ module axi_pwm_gen_1 #(
   always @ (posedge clk) begin
     if ((rstn == 1'b0) || (phase_align == 1'b1) || (end_of_pulse == 1'b1)) begin
       pulse <= 1'b0;
-    end else if (pulse_period_cnt == 32'd0 && pulse_width_d != 32'd0) begin
+    end else if (pulse_period_cnt == 32'd0 && pulse_period_d != 32'd0) begin
       pulse <= 1'b1;
     end
   end
