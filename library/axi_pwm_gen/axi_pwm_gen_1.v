@@ -63,6 +63,11 @@ module axi_pwm_gen_1 #(
   reg                          end_of_pulse = 1'b0;
 
   wire                         phase_align;
+  wire                         pulse_enable;
+
+  // enable pwm
+
+  assign pulse_enable = pulse_period_d != 32'd0 ? 1'b1 : 1'b0;
 
   // flop the desired period
 
@@ -79,7 +84,7 @@ module axi_pwm_gen_1 #(
         pulse_width_read <= pulse_width;
       end
       // update the current period/width at the end of the period
-      if (end_of_period) begin
+      if (end_of_period | ~pulse_enable) begin
         pulse_period_d <= pulse_period_read;
         pulse_width_d <= pulse_width_read;
       end
@@ -106,9 +111,11 @@ module axi_pwm_gen_1 #(
 
   always @(posedge clk) begin
     if (rstn == 1'b0 || phase_align == 1'b1 || end_of_period == 1'b1) begin
-      pulse_period_cnt <= 32'd0;
+      pulse_period_cnt <= 32'd1;
     end else begin
-      pulse_period_cnt <= pulse_period_cnt + 1'b1;
+      if (pulse_enable == 1'b1) begin 
+        pulse_period_cnt <= pulse_period_cnt + 1'b1;
+      end
     end
 
     end_of_period <= (pulse_period_cnt == pulse_period_d) ? 1'b1 : 1'b0;
@@ -120,7 +127,7 @@ module axi_pwm_gen_1 #(
   always @ (posedge clk) begin
     if ((rstn == 1'b0) || (phase_align == 1'b1) || (end_of_pulse == 1'b1)) begin
       pulse <= 1'b0;
-    end else if (pulse_period_cnt == 32'd0 && pulse_period_d != 32'd0) begin
+    end else if (pulse_period_cnt == 32'd1 && pulse_enable == 1'b1) begin
       pulse <= 1'b1;
     end
   end
