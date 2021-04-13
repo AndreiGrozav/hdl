@@ -77,6 +77,11 @@ module axi_ltc2387_if #(
   reg      [WIDTH-1:0]    adc_data_db_n = 'b0;
   reg      [1:0]          clk_gate_d = 1'b0;
 
+  reg [3:0] reg_da_p = 4'd0;
+  reg [3:0] reg_da_n = 4'd0;
+  reg [3:0] reg_db_p = 4'd0;
+  reg [3:0] reg_db_n = 4'd0;
+
   always @(posedge clk) begin
     clk_gate_d <= {clk_gate_d, clk_gate};
   end
@@ -85,18 +90,22 @@ module axi_ltc2387_if #(
 
   always @(posedge dco) begin
       adc_data_da_p <= {adc_data_da_p, da_int_s};
+      reg_da_p <= adc_data_da_p;
   end
 
   always @(negedge dco) begin
       adc_data_da_n <= {adc_data_da_n, da_int_s};
+      reg_da_n <= adc_data_da_n;
   end
 
   always @(posedge dco) begin
       adc_data_db_p <= {adc_data_db_p, db_int_s};
+      reg_db_p <= adc_data_db_p;
   end
 
   always @(negedge dco) begin
       adc_data_db_n <= {adc_data_db_n, db_int_s};
+      reg_db_n <= adc_data_db_n;
   end
 
   my_ila i_ila (
@@ -104,7 +113,13 @@ module axi_ltc2387_if #(
     .probe0(dco),
     .probe1(adc_data),
     .probe2(da_int_s),
-    .probe3(db_int_s));
+    .probe3(db_int_s),
+    .probe4(reg_da_p),
+    .probe5(reg_da_n),
+    .probe6(reg_db_p),
+    .probe7(reg_db_n),
+    .probe8(adc_valid));
+
 
   // bits rearrangement
 
@@ -124,12 +139,12 @@ module axi_ltc2387_if #(
     if (RESOLUTION == 16) begin
       assign adc_data = adc_data_int[RESOLUTION-1:0];
     end else begin
-    if (RESOLUTION == 18) begin
-      if (!TWOLANES) begin
-        assign adc_data = adc_data_int[RESOLUTION-1:0];
-      end else begin
-        assign adc_data = adc_data_int[RESOLUTION+1:2];
-      end
+      if (RESOLUTION == 18) begin
+        if (!TWOLANES) begin
+          assign adc_data = adc_data_int[RESOLUTION-1:0];
+        end else begin
+          assign adc_data = adc_data_int[RESOLUTION+1:2];
+        end
       end
     end
   endgenerate
