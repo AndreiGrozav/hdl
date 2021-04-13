@@ -17,10 +17,13 @@ set sys_cstring "sys rom custom string placeholder"
 sysid_gen_sys_init_file $sys_cstring
 
 create_bd_cell -type ip -vlnv xilinx.com:ip:ila:6.2 ila_0
-set_property -dict [list CONFIG.C_DATA_DEPTH {8192} CONFIG.C_NUM_OF_PROBES {4} CONFIG.C_INPUT_PIPE_STAGES {3} CONFIG.C_ENABLE_ILA_AXI_MON {false} CONFIG.C_MONITOR_TYPE {Native}] [get_bd_cells ila_0]
-connect_bd_net [get_bd_pins sys_ps7/FCLK_CLK1] [get_bd_pins ila_0/clk]
+set_property -dict [list CONFIG.C_DATA_DEPTH {8192} CONFIG.C_NUM_OF_PROBES {5} CONFIG.C_INPUT_PIPE_STAGES {3} CONFIG.C_ENABLE_ILA_AXI_MON {false} CONFIG.C_MONITOR_TYPE {Native}] [get_bd_cells ila_0]
+connect_bd_net [get_bd_pins axi_clkgen/clk_1] [get_bd_pins ila_0/clk]
 connect_bd_net [get_bd_ports ref_clk] [get_bd_pins ila_0/probe0]
 connect_bd_net [get_bd_pins ila_0/probe1] [get_bd_pins axi_pwm_gen/pwm_0]
 connect_bd_net [get_bd_pins ila_0/probe2] [get_bd_pins axi_pwm_gen/pwm_1]
 connect_bd_net [get_bd_pins ila_0/probe3] [get_bd_pins axi_ltc2387/adc_valid]
-connect_bd_net [get_bd_pins axi_ltc2387/ila_clk] [get_bd_pins sys_ps7/FCLK_CLK1]
+set_property -dict [list CONFIG.C_PROBE4_WIDTH {16}] [get_bd_cells ila_0]
+connect_bd_net [get_bd_pins ila_0/probe4] [get_bd_pins axi_ltc2387/adc_data]
+
+connect_bd_net [get_bd_pins axi_ltc2387/ila_clk] [get_bd_pins axi_clkgen/clk_1]

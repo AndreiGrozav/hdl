@@ -113,6 +113,7 @@ module system_top (
   wire            iic_mux_sda_t_s;
 
   wire            clk_s;
+  wire            sampling_clk_s;
 
 // instantiations
 
@@ -129,7 +130,7 @@ OBUFTDS OBUFTDS_clk (
   .O(clk_p),
   .OB(clk_n),
   .T(~clk_gate),
-  .I(clk_s));
+  .I(sampling_clk_s));
 
 OBUFDS OBUFDS_cnv (
   .O(cnv_p),
@@ -139,7 +140,7 @@ OBUFDS OBUFDS_cnv (
 OBUFT OBUFT_clk (
   .O(clk_out),
   .T(~clk_gate),
-  .I(clk_s));
+  .I(sampling_clk_s));
 
 assign cnv_out = cnv;
 assign clk_gate_out = clk_gate;
@@ -214,6 +215,7 @@ system_wrapper i_system_wrapper (
     .otg_vbusoc (otg_vbusoc),
     .spdif (spdif),
     .ref_clk (clk_s),
+    .sampling_clk (sampling_clk_s),
     .dco_p (dco_p),
     .dco_n (dco_n),
     .da_n (da_n),
