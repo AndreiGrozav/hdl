@@ -96,6 +96,12 @@ module system_top (
   output                  clk_out,
   output                  cnv_out,
   output                  clk_gate_out,
+  output                  s_clk_out,
+  output                  s_clk_out_2,
+  output                  dco_out,
+  output                  da_out,
+  output                  db_out,
+
   output                  cnv_p,
   output                  cnv_n);
 
@@ -126,22 +132,56 @@ i_ref_clk (
   .clk_in_n (ref_clk_n),
   .clk (clk_s));
 
-OBUFTDS OBUFTDS_clk (
-  .O(clk_p),
-  .OB(clk_n),
-  .T(~clk_gate),
-  .I(sampling_clk_s));
+ad_data_out #(
+  .FPGA_TECHNOLOGY (1),
+  .IODELAY_ENABLE (0),
+  .IODELAY_CTRL (0),
+  .IODELAY_GROUP (0),
+  .REFCLK_FREQUENCY (200))
+i_tx_clk (
+  .tx_clk (sampling_clk_s),
+  .tx_data_p (clk_gate),
+  .tx_data_n (1'b0),
+  .tx_data_out_p (clk_p),
+  .tx_data_out_n (clk_n));
+
 
 OBUFDS OBUFDS_cnv (
   .O(cnv_p),
   .OB(cnv_n),
   .I(cnv));
 
-OBUFT OBUFT_clk (
+// debug
+OBUF OBUFT_clk (
   .O(clk_out),
-  .T(~clk_gate),
+  .I(sampling_clk_s & ~clk_gate));
+
+OBUFT OBUFT_clk_test (
+  .O(s_clk_out),
+  .T(0),
   .I(sampling_clk_s));
 
+OBUFT OBUFT_clk_test_2 (
+  .O(s_clk_out_2),
+  .T(0),
+  .I(ila_clk_out));
+
+OBUFT OBUFT_db_out (
+  .O(db_out),
+  .T(0),
+  .I(db_out_s));
+
+OBUFT OBUFT_da_out (
+  .O(da_out),
+  .T(0),
+  .I(da_out_s));
+
+OBUFT OBUFT_dco_out (
+  .O(dco_out),
+  .T(0),
+  .I(dco_out_s));
+
+///
 assign cnv_out = cnv;
 assign clk_gate_out = clk_gate;
 
@@ -216,6 +256,7 @@ system_wrapper i_system_wrapper (
     .spdif (spdif),
     .ref_clk (clk_s),
     .sampling_clk (sampling_clk_s),
+    .ila_clk_out (ila_clk_out),
     .dco_p (dco_p),
     .dco_n (dco_n),
     .da_n (da_n),
@@ -224,6 +265,12 @@ system_wrapper i_system_wrapper (
     .db_p (db_p),
     .cnv (cnv),
     .clk_gate (clk_gate),
+
+    // debug
+    .dco_out (dco_out_s),
+    .da_out  (da_out_s),
+    .db_out  (db_out_s),
+
     .spi0_clk_i (1'b0),
     .spi0_clk_o (),
     .spi0_csn_0_o (),
