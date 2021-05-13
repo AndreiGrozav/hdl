@@ -88,13 +88,13 @@ module axi_ltc2387 #(
   assign adc_valid = ~clk_gate_d[0] & clk_gate_d[1];
 
   always @(posedge dco) begin
-      adc_data_da_p <= {adc_data_da_p, da_int_s};
-      adc_data_db_p <= {adc_data_db_p, db_int_s};
+      adc_data_da_p <= {adc_data_da_p[WIDTH-2:0], da_int_s};
+      adc_data_db_p <= {adc_data_db_p[WIDTH-2:0], db_int_s};
   end
 
   always @(negedge dco) begin
-      adc_data_da_n <= {adc_data_da_n, da_int_s};
-      adc_data_db_n <= {adc_data_db_n, db_int_s};
+      adc_data_da_n <= {adc_data_da_n[WIDTH-2:0], da_int_s};
+      adc_data_db_n <= {adc_data_db_n[WIDTH-2:0], db_int_s};
   end
 
 // debug
