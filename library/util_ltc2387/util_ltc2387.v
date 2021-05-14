@@ -42,7 +42,6 @@ module axi_ltc2387 #(
 
   // adc interface
 
-  input                     ila_clk,
   input                     ref_clk,
   input                     clk_gate,
   input                     dco_p,
@@ -55,31 +54,25 @@ module axi_ltc2387 #(
   // dma interface
 
   output                    adc_valid,
-  output  [RESOLUTION-1:0]  adc_data,
-  input                     adc_dovf,
+  output  [RESOLUTION-1:0]  adc_data);
 
-  // debug
-  output                    dco_out,
-  output                    da_out,
-  output                    db_out);
-
-  localparam   WIDTH = (RESOLUTION == 18) ?
-                             (TWOLANES == 0)    ? 9 : 5 :
-                             (RESOLUTION == 16) ?
-                             (TWOLANES == 0)    ? 8 : 4 : 8;
+  localparam   ONE_L_WIDTH = (RESOLUTION == 18) ? 9 : 8;
+  localparam   TWO_L_WIDTH = (RESOLUTION == 18) ? 5 : 4;
+  localparam   WIDTH = (TWOLANES == 0) ? ONE_L_WIDTH : TWO_L_WIDTH;
 
   // local wires and registers
 
   wire                    da_int_s;
   wire                    db_int_s;
+  wire                    dco_s;
   wire                    dco;
-  wire         [19:0]     adc_data_int;
+  wire     [     19:0]    adc_data_int;
 
   reg      [WIDTH-1:0]    adc_data_da_p = 'b0;
   reg      [WIDTH-1:0]    adc_data_da_n = 'b0;
   reg      [WIDTH-1:0]    adc_data_db_p = 'b0;
   reg      [WIDTH-1:0]    adc_data_db_n = 'b0;
-  reg      [1:0]          clk_gate_d = 1'b0;
+  reg      [      1:0]    clk_gate_d = 1'b0;
 
   always @(posedge ref_clk) begin
     clk_gate_d <= {clk_gate_d, clk_gate};
@@ -88,29 +81,14 @@ module axi_ltc2387 #(
   assign adc_valid = ~clk_gate_d[0] & clk_gate_d[1];
 
   always @(posedge dco) begin
-      adc_data_da_p <= {adc_data_da_p[WIDTH-2:0], da_int_s};
-      adc_data_db_p <= {adc_data_db_p[WIDTH-2:0], db_int_s};
+    adc_data_da_p <= {adc_data_da_p[WIDTH-2:0], da_int_s};
+    adc_data_db_p <= {adc_data_db_p[WIDTH-2:0], db_int_s};
   end
 
   always @(negedge dco) begin
-      adc_data_da_n <= {adc_data_da_n[WIDTH-2:0], da_int_s};
-      adc_data_db_n <= {adc_data_db_n[WIDTH-2:0], db_int_s};
+    adc_data_da_n <= {adc_data_da_n[WIDTH-2:0], da_int_s};
+    adc_data_db_n <= {adc_data_db_n[WIDTH-2:0], db_int_s};
   end
-
-// debug
-
-  my_ila i_ila (
-    .clk(ila_clk),
-    .probe0(dco),
-    .probe1(adc_data),
-    .probe2(da_int_s),
-    .probe3(db_int_s),
-    .probe4(adc_data_da_p),
-    .probe5(adc_data_da_n),
-    .probe6(adc_data_db_p),
-    .probe7(adc_data_db_n),
-    .probe8(adc_valid));
-
 
   // bits rearrangement
 
@@ -161,12 +139,11 @@ module axi_ltc2387 #(
     .locked (),
     .clk_in_p (dco_p),
     .clk_in_n (dco_n),
-    .clk (dco));
+    .clk (dco_s));
 
-  assign  dco_out = dco;
-  assign  da_out = da_int_s;
-  assign  db_out = db_int_s;
-
+   BUFG BUFG_inst (
+      .O(dco),
+      .I(dco_s));
 
 endmodule
 
