@@ -93,19 +93,10 @@ module system_top (
   input                   da_p,
   input                   db_n,
   input                   db_p,
-  output                  clk_out,
-  output                  cnv_out,
-  output                  clk_gate_out,
-  output                  s_clk_out,
-  output                  s_clk_out_2,
-  output                  dco_out,
-  output                  da_out,
-  output                  db_out,
-
   output                  cnv_p,
   output                  cnv_n);
 
-// internal signals
+  // internal signals
 
   wire    [63:0]  gpio_i;
   wire    [63:0]  gpio_o;
@@ -121,95 +112,60 @@ module system_top (
   wire            clk_s;
   wire            sampling_clk_s;
 
-// instantiations
+  // instantiations
 
-ad_data_clk #(
-  .SINGLE_ENDED (0))
-i_ref_clk (
-  .rst (1'b0),
-  .locked (),
-  .clk_in_p (ref_clk_p),
-  .clk_in_n (ref_clk_n),
-  .clk (clk_s));
+  ad_data_clk #(
+    .SINGLE_ENDED (0))
+  i_ref_clk (
+    .rst (1'b0),
+    .locked (),
+    .clk_in_p (ref_clk_p),
+    .clk_in_n (ref_clk_n),
+    .clk (clk_s));
 
-ad_data_out #(
-  .FPGA_TECHNOLOGY (1),
-  .IODELAY_ENABLE (0),
-  .IODELAY_CTRL (0),
-  .IODELAY_GROUP (0),
-  .REFCLK_FREQUENCY (200))
-i_tx_clk (
-  .tx_clk (sampling_clk_s),
-  .tx_data_p (clk_gate),
-  .tx_data_n (1'b0),
-  .tx_data_out_p (clk_p),
-  .tx_data_out_n (clk_n));
+  ad_data_out #(
+    .FPGA_TECHNOLOGY (1),
+    .IODELAY_ENABLE (0),
+    .IODELAY_CTRL (0),
+    .IODELAY_GROUP (0),
+    .REFCLK_FREQUENCY (200))
+  i_tx_clk (
+    .tx_clk (sampling_clk_s),
+    .tx_data_p (clk_gate),
+    .tx_data_n (1'b0),
+    .tx_data_out_p (clk_p),
+    .tx_data_out_n (clk_n));
 
+  OBUFDS OBUFDS_cnv (
+    .O(cnv_p),
+    .OB(cnv_n),
+    .I(cnv));
 
-OBUFDS OBUFDS_cnv (
-  .O(cnv_p),
-  .OB(cnv_n),
-  .I(cnv));
+  ad_iobuf #(.DATA_WIDTH(32)) iobuf_gpio_bd (
+    .dio_i (gpio_o[31:0]),
+    .dio_o (gpio_i[31:0]),
+    .dio_t (gpio_t[31:0]),
+    .dio_p (gpio_bd));
 
-// debug
-OBUF OBUFT_clk (
-  .O(clk_out),
-  .I(sampling_clk_s & ~clk_gate));
+  assign gpio_i[63:32] = gpio_o[63:32];
 
-OBUFT OBUFT_clk_test (
-  .O(s_clk_out),
-  .T(0),
-  .I(sampling_clk_s));
-
-OBUFT OBUFT_clk_test_2 (
-  .O(s_clk_out_2),
-  .T(0),
-  .I(ila_clk_out));
-
-OBUFT OBUFT_db_out (
-  .O(db_out),
-  .T(0),
-  .I(db_out_s));
-
-OBUFT OBUFT_da_out (
-  .O(da_out),
-  .T(0),
-  .I(da_out_s));
-
-OBUFT OBUFT_dco_out (
-  .O(dco_out),
-  .T(0),
-  .I(dco_out_s));
-
-///
-assign cnv_out = cnv;
-assign clk_gate_out = clk_gate;
-
-ad_iobuf #(.DATA_WIDTH(32)) iobuf_gpio_bd (
-  .dio_i (gpio_o[31:0]),
-  .dio_o (gpio_i[31:0]),
-  .dio_t (gpio_t[31:0]),
-  .dio_p (gpio_bd));
-
-assign gpio_i[63:32] = gpio_o[63:32];
-
-ad_iobuf #(
-  .DATA_WIDTH(2)
-  ) i_iic_mux_scl (
+  ad_iobuf #(
+    .DATA_WIDTH(2))
+  i_iic_mux_scl (
     .dio_t({iic_mux_scl_t_s, iic_mux_scl_t_s}),
     .dio_i(iic_mux_scl_o_s),
     .dio_o(iic_mux_scl_i_s),
     .dio_p(iic_mux_scl));
 
-ad_iobuf #(
-  .DATA_WIDTH(2)
-  ) i_iic_mux_sda (
+  ad_iobuf #(
+    .DATA_WIDTH(2))
+  i_iic_mux_sda (
     .dio_t({iic_mux_sda_t_s, iic_mux_sda_t_s}),
     .dio_i(iic_mux_sda_o_s),
     .dio_o(iic_mux_sda_i_s),
     .dio_p(iic_mux_sda));
 
-system_wrapper i_system_wrapper (
+  system_wrapper i_system_wrapper (
     .ddr_addr(ddr_addr),
     .ddr_ba(ddr_ba),
     .ddr_cas_n(ddr_cas_n),
@@ -256,7 +212,6 @@ system_wrapper i_system_wrapper (
     .spdif (spdif),
     .ref_clk (clk_s),
     .sampling_clk (sampling_clk_s),
-    .ila_clk_out (ila_clk_out),
     .dco_p (dco_p),
     .dco_n (dco_n),
     .da_n (da_n),
@@ -265,11 +220,6 @@ system_wrapper i_system_wrapper (
     .db_p (db_p),
     .cnv (cnv),
     .clk_gate (clk_gate),
-
-    // debug
-    .dco_out (dco_out_s),
-    .da_out  (da_out_s),
-    .db_out  (db_out_s),
 
     .spi0_clk_i (1'b0),
     .spi0_clk_o (),
