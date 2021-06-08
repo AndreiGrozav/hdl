@@ -138,3 +138,4 @@ module axi_pwm_gen_1 #(
   assign pulse_counter = pulse_period_cnt;
 
 endmodule
+

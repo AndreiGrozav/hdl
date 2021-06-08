@@ -107,12 +107,12 @@ for {set i 1} {$i < 4} {incr i} {
   [ipx::get_user_parameters PULSE_${i}_PERIOD -of_objects $cc]
 
   if { $i == 1 } {
-    ipgui::add_param -name "PWM_0_EXT_SYNC" -component $cc -parent $page0
+    ipgui::add_param -name "PWM_EXT_SYNC" -component $cc -parent $page0
     set_property -dict [list \
       "display_name" "Main pwm(1) sync" \
       "tooltip" "NOTE: If active the whole pwm gen module will be waiting for the ext_sync to be set high." \
       "widget" "checkBox" \
-    ] [ipgui::get_guiparamspec -name "PWM_0_EXT_SYNC" -component $cc]
+    ] [ipgui::get_guiparamspec -name "PWM_EXT_SYNC" -component $cc]
   } else {
     ipgui::add_param -name "PULSE_${i}_OFFSET" -component $cc -parent $page0
     set_property -dict [list \
@@ -135,7 +135,7 @@ for {set i 1} {$i < 4} {incr i} {
 }
 
 adi_set_ports_dependency "ext_sync" \
-	"(spirit:decode(id('MODELPARAM_VALUE.PWM_0_EXT_SYNC')) == 1)"
+	"(spirit:decode(id('MODELPARAM_VALUE.PWM_EXT_SYNC')) == 1)"
 
 set_property driver_value 0 [ipx::get_ports -filter "direction==in" -of_objects $cc]
 
